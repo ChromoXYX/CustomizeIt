@@ -8,35 +8,55 @@ using System.Collections.Generic;
 namespace CustomizeIt
 {
     [FileLocation("ModsSettings/CustomTourism/CustomTourism")]
-    [SettingsUIGroupOrder(TourismGroup, ResetGroup)]
-    [SettingsUIShowGroupName(TourismGroup, ResetGroup)]
+    [SettingsUIGroupOrder(TourismGroup, ArrivalGroup, ResetGroup)]
+    [SettingsUIShowGroupName(TourismGroup, ArrivalGroup, ResetGroup)]
     public class Setting : ModSetting
     {
         private const int MinTarget = 0;
         private const int MaxTarget = 60000;
         private const int DefaultTarget = 0;
+        private const int DefaultAggressiveness = 5;
+        private const int DefaultRoadWeight = 25;
+        private const int DefaultTrainWeight = 25;
+        private const int DefaultAirWeight = 25;
+        private const int DefaultShipWeight = 25;
 
-        // Tabs
         public const string TourismTab = "Tourism";
 
-        // Groups
         public const string TourismGroup = "Tourism Settings";
+        public const string ArrivalGroup = "Arrival Distribution";
         public const string ResetGroup = "Reset";
 
         public Setting(IMod mod) : base(mod)
         {
         }
 
-        // ---- Existing: per-building attractiveness overrides ----
-
         public string[] OverridePrefabNames { get; set; } = new string[0];
         public int[] OverrideValues { get; set; } = new int[0];
-
-        // ---- Tourism: target tourist count ----
 
         [SettingsUISlider(min = 0, max = 60000, step = 500, scalarMultiplier = 1, unit = Unit.kInteger)]
         [SettingsUISection(TourismTab, TourismGroup)]
         public int TargetTouristCount { get; set; }
+
+        [SettingsUISlider(min = 1, max = 10, step = 1, scalarMultiplier = 1, unit = Unit.kInteger)]
+        [SettingsUISection(TourismTab, TourismGroup)]
+        public int Aggressiveness { get; set; }
+
+        [SettingsUISlider(min = 0, max = 100, step = 1, scalarMultiplier = 1, unit = Unit.kPercentage)]
+        [SettingsUISection(TourismTab, ArrivalGroup)]
+        public int RoadWeight { get; set; }
+
+        [SettingsUISlider(min = 0, max = 100, step = 1, scalarMultiplier = 1, unit = Unit.kPercentage)]
+        [SettingsUISection(TourismTab, ArrivalGroup)]
+        public int TrainWeight { get; set; }
+
+        [SettingsUISlider(min = 0, max = 100, step = 1, scalarMultiplier = 1, unit = Unit.kPercentage)]
+        [SettingsUISection(TourismTab, ArrivalGroup)]
+        public int AirWeight { get; set; }
+
+        [SettingsUISlider(min = 0, max = 100, step = 1, scalarMultiplier = 1, unit = Unit.kPercentage)]
+        [SettingsUISection(TourismTab, ArrivalGroup)]
+        public int ShipWeight { get; set; }
 
         [SettingsUIButton]
         [SettingsUISection(TourismTab, ResetGroup)]
@@ -46,6 +66,11 @@ namespace CustomizeIt
             {
                 if (!value) return;
                 TargetTouristCount = DefaultTarget;
+                Aggressiveness = DefaultAggressiveness;
+                RoadWeight = DefaultRoadWeight;
+                TrainWeight = DefaultTrainWeight;
+                AirWeight = DefaultAirWeight;
+                ShipWeight = DefaultShipWeight;
                 ApplyAndSave();
             }
         }
@@ -55,12 +80,23 @@ namespace CustomizeIt
             OverridePrefabNames = new string[0];
             OverrideValues = new int[0];
             TargetTouristCount = DefaultTarget;
+            Aggressiveness = DefaultAggressiveness;
+            RoadWeight = DefaultRoadWeight;
+            TrainWeight = DefaultTrainWeight;
+            AirWeight = DefaultAirWeight;
+            ShipWeight = DefaultShipWeight;
         }
 
         public override void Apply()
         {
             if (TargetTouristCount < MinTarget || TargetTouristCount > MaxTarget)
                 TargetTouristCount = DefaultTarget;
+            if (Aggressiveness < 1 || Aggressiveness > 10)
+                Aggressiveness = DefaultAggressiveness;
+            if (RoadWeight < 0 || RoadWeight > 100) RoadWeight = DefaultRoadWeight;
+            if (TrainWeight < 0 || TrainWeight > 100) TrainWeight = DefaultTrainWeight;
+            if (AirWeight < 0 || AirWeight > 100) AirWeight = DefaultAirWeight;
+            if (ShipWeight < 0 || ShipWeight > 100) ShipWeight = DefaultShipWeight;
             base.Apply();
         }
     }
@@ -80,14 +116,12 @@ namespace CustomizeIt
             {
                 { m_Setting.GetSettingsLocaleID(), "Custom Tourism" },
 
-                // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.TourismTab), "Tourism" },
 
-                // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.TourismGroup), "Tourism Settings" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.ArrivalGroup), "Arrival Distribution" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.ResetGroup), "Reset" },
 
-                // Target tourist count slider
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TargetTouristCount)), "Target Tourist Count" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TargetTouristCount)),
@@ -98,7 +132,34 @@ namespace CustomizeIt
                     "Tourists also need good access to your city - make sure you have road, train, air, or ship outside connections, otherwise tourists won't be able to reach your city."
                 },
 
-                // Reset button
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.Aggressiveness)), "Spawn Speed" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.Aggressiveness)),
+                    "How fast the mod adds or removes tourists each tick to reach your target.\n" +
+                    "Lower values are gentler; higher values close big gaps faster but can cause brief hitches."
+                },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RoadWeight)), "Road Arrivals" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.RoadWeight)),
+                    "Relative share of tourists arriving by road. Values are relative — only the ratio between modes matters."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TrainWeight)), "Train Arrivals" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.TrainWeight)),
+                    "Relative share of tourists arriving by train. Requires a passenger train line that touches a Train outside connection."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AirWeight)), "Air Arrivals" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.AirWeight)),
+                    "Relative share of tourists arriving by air. Requires a passenger air route between your airport and an Air outside connection."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShipWeight)), "Ship Arrivals" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShipWeight)),
+                    "Relative share of tourists arriving by ship. Requires a passenger ferry line that touches a Ship outside connection."
+                },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetTourism)), "Reset to Default" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetTourism)),
@@ -127,14 +188,12 @@ namespace CustomizeIt
             {
                 { m_Setting.GetSettingsLocaleID(), "Custom Tourism" },
 
-                // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.TourismTab), "Tourisme" },
 
-                // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.TourismGroup), "Parametres de tourisme" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.ArrivalGroup), "Distribution des arrivees" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.ResetGroup), "Reinitialiser" },
 
-                // Target tourist count slider
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TargetTouristCount)), "Nombre cible de touristes" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TargetTouristCount)),
@@ -145,7 +204,34 @@ namespace CustomizeIt
                     "Les touristes ont aussi besoin d'un bon acces a votre ville - assurez-vous d'avoir des connexions exterieures par route, train, air ou bateau, sinon les touristes ne pourront pas atteindre votre ville."
                 },
 
-                // Reset button
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.Aggressiveness)), "Vitesse d'arrivee" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.Aggressiveness)),
+                    "Vitesse a laquelle le mod ajoute ou retire des touristes a chaque tick pour atteindre la cible.\n" +
+                    "Des valeurs basses sont plus douces; des valeurs plus elevees comblent les grands ecarts plus vite mais peuvent causer de brefs ralentissements."
+                },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RoadWeight)), "Arrivees par route" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.RoadWeight)),
+                    "Part relative des touristes arrivant par la route. Les valeurs sont relatives - seul le rapport entre les modes compte."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TrainWeight)), "Arrivees par train" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.TrainWeight)),
+                    "Part relative des touristes arrivant par train. Necessite une ligne de train passagers reliee a une connexion exterieure ferroviaire."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AirWeight)), "Arrivees par avion" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.AirWeight)),
+                    "Part relative des touristes arrivant par avion. Necessite une ligne aerienne passagers entre votre aeroport et une connexion exterieure aerienne."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShipWeight)), "Arrivees par bateau" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShipWeight)),
+                    "Part relative des touristes arrivant par bateau. Necessite une ligne de ferry passagers reliee a une connexion exterieure maritime."
+                },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetTourism)), "Reinitialiser" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetTourism)),

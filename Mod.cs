@@ -31,6 +31,7 @@ namespace CustomizeIt
             updateSystem.UpdateAt<BuildingAttractivenessUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAfter<AttractivenessOverrideSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<TouristBoostSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<TouristTransitArrivalSystem>(SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()

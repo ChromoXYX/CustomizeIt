@@ -76,6 +76,7 @@ Thanks to **Honu / River-Mochi** from the Cities: Skylines modding Discord for t
 - Tourist target raised to 60k
 - Vanilla tourist spawning pauses when a target is set
 - Smoother behavior around the target on bigger cities
+- Spawn speed slider to control how fast tourists ramp up or down
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/JoshuaSayagh/CustomizeIt/" />

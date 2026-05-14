@@ -10,10 +10,6 @@ using Unity.Entities;
 
 namespace CustomizeIt.Systems
 {
-    /// <summary>
-    /// Handles the attractiveness editor panel UI and communicates
-    /// user changes to the override system.
-    /// </summary>
     public partial class BuildingAttractivenessUISystem : UISystemBase
     {
         private const string kGroup = "customizeIt";

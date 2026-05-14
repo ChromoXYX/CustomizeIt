@@ -11,6 +11,10 @@ A **Cities: Skylines II** mod that lets you control the number of tourists in yo
 - Works independently from the game's built-in tourism formula
 - Make sure you have enough hotels to accommodate your tourists
 
+### Arrival Distribution
+- Reweight the share of tourists arriving by **Road / Train / Air / Ship** from the settings panel
+- Weights are normalized — leave all four at 0 to use the vanilla split
+
 ### Attractiveness Editor
 - Select any building with attractiveness (landmarks, parks, tourist attractions) and an **editor panel** appears
 - **Slider** to set attractiveness from 0 to 500
@@ -36,6 +40,11 @@ A **Cities: Skylines II** mod that lets you control the number of tourists in yo
 - Drag the slider or type a value, then hit **Apply**
 - The override is saved automatically and reloaded next time you play
 
+### Transit Arrivals (Train / Air / Ship)
+Vanilla starts every tourist with a pedestrian pathfind from their outside connection. Road OCs sit on a road so the walk works, but Train, Air, and Ship OCs have no pedestrian start lane — the pathfind returns nothing and vanilla kills the tourist with `TouristNoTarget`. That's why the vast majority of non-Road arrivals never appear in your city in the base game.
+
+To make the Arrival Distribution feature actually do anything, the mod pre-assigns those tourists a destination itself: it picks a hotel (or, if none have free rooms, an attraction) using the **same scoring formula vanilla uses internally** — free rooms, room price, and the road-edge attractiveness of the destination's neighbourhood. The reservation writes (hotel free-room decrement, household-to-renter buffer, `Target` component) match what vanilla's `HotelReserveJob` does, so the rest of the tourist lifecycle behaves normally.
+
 ## Note
 - Attractiveness changes take about **5 to 20 seconds** to show up in the tourism menu. The override is applied immediately, but the game's tourism stats take a moment to recalculate.
 
@@ -44,13 +53,14 @@ A **Cities: Skylines II** mod that lets you control the number of tourists in yo
 - Does not use Harmony
 
 ## Settings file
-`ModsSettings/CustomTourism/CustomTourism.coc`
+`ModsSettings/CustomizeIt/CustomizeIt.coc`
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
 | Target tourist count | Set a custom tourist target for your city (0–20000). |
+| Arrival distribution | Reweight Road / Train / Air / Ship arrival shares. |
 | Attractiveness slider | Set any building's attractiveness between **0 and 500**. |
 | Restore Default | Reverts the building back to its vanilla attractiveness value. |
 | Persistent overrides | Your changes are saved and automatically reapplied on game load. |

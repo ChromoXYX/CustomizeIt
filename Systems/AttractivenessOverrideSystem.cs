@@ -142,6 +142,8 @@ namespace CustomizeIt.Systems
                     {
                         m_Attractiveness = attractiveness
                     });
+                    if (!EntityManager.HasComponent<Updated>(entities[i]))
+                        EntityManager.AddComponent<Updated>(entities[i]);
                     m_Overrides[entities[i]] = attractiveness;
                 }
             }
